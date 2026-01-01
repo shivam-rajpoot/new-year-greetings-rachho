@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy New Year Rachho ✨</title>
+
+<style>
+html,body{
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    background:black;
+    font-family:'Segoe UI',sans-serif;
+    color:white;
+}
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+}
+.ui{
+    position:absolute;
+    width:100%;
+    text-align:center;
+    bottom:10%;
+    animation:fadeUp 3s ease;
+}
+h1{
+    font-size:2.5rem;
+    text-shadow:0 0 25px gold;
+}
+.shayari{
+    margin-top:15px;
+    font-size:1.1rem;
+    line-height:1.8;
+    color:#f1f1f1;
+}
+.credit{
+    margin-top:18px;
+    font-size:0.85rem;
+    color:#aaa;
+}
+button{
+    margin-top:15px;
+    padding:10px 25px;
+    border:none;
+    border-radius:25px;
+    background:linear-gradient(45deg,#ff9800,#ffe066);
+    font-size:1rem;
+    box-shadow:0 0 25px #ff9800;
+}
+@keyframes fadeUp{
+    from{opacity:0;transform:translateY(40px)}
+    to{opacity:1;transform:translateY(0)}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="space"></canvas>
+
+<div class="ui">
+    <h1>✨ Happy New Year Rachho ✨</h1>
+
+    <div class="shayari">
+        सदा दूर रहो गम की परछाइयों से,<br>
+        सामना न हो कभी तन्हाइयों से,<br>
+        हर अरमान हर ख्वाब पूरा हो आपका,<br>
+        यही दुआ है दिल की गहराइयों से 💖
+    </div>
+
+    <button onclick="playMusic()">▶ Play Music</button>
+
+    <div class="credit">
+        Created with ❤️ by <b>Shivam Ajeet Rajpoot</b>
+    </div>
+</div>
+
+<audio id="bgm" loop>
+    <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const canvas = document.getElementById("space");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+    let nameLetters = [];        // screen par dikhne wale letters
+let letters = "RACHHO".split("");
+let letterIndex = 0;
+let startX;
+let fireworks = [];
+/* 🌌 Galaxy Stars */
+let stars=[];
+for(let i=0;i<300;i++){
+    stars.push({
+        x:Math.random()*canvas.width,
+        y:Math.random()*canvas.height,
+        z:Math.random()*2+0.5
+    });
+}
+
+
+
+class Firework{
+    constructor(targetX,targetY){
+        this.x=Math.random()*canvas.width;
+        this.y=canvas.height;
+        this.tx=targetX;
+        this.ty=targetY;
+        this.exploded=false;
+        this.particles=[];
+    }
+    update(){
+        if(!this.exploded){
+            this.x+=(this.tx-this.x)*0.05;
+            this.y+=(this.ty-this.y)*0.05;
+            if(Math.abs(this.y-this.ty)<5){
+                this.exploded=true;
+                for(let i=0;i<70;i++){
+                    this.particles.push({
+                        x:this.x,
+                        y:this.y,
+                        dx:(Math.random()-0.5)*6,
+                        dy:(Math.random()-0.5)*6,
+                        life:80
+                    });
+                }
+            }
+        }
+    }
+    draw(){
+        if(!this.exploded){
+            ctx.fillStyle="white";
+            ctx.fillRect(this.x,this.y,2,2);
+        } else {
+            this.particles.forEach(p=>{
+                ctx.fillStyle=`hsl(${Math.random()*360},100%,60%)`;
+                ctx.fillRect(p.x,p.y,3,3);
+                p.x+=p.dx;
+                p.y+=p.dy;
+                p.life--;
+            });
+            this.particles=this.particles.filter(p=>p.life>0);
+        }
+    }
+}
+
+/* ✨ Draw Letter */
+function drawLetter(letter, x, y) {
+    ctx.font = "bold 80px Arial";
+    ctx.fillStyle = "gold";
+    ctx.shadowColor = "gold";
+    ctx.shadowBlur = 30;
+    ctx.fillText(letter, x, y);
+    ctx.shadowBlur = 0;
+}
+
+function animate(){
+    ctx.fillStyle="rgba(0,0,20,0.3)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    /* Galaxy move */
+    ctx.fillStyle="white";
+    stars.forEach(s=>{
+        ctx.fillRect(s.x,s.y,s.z,s.z);
+        s.y+=s.z;
+        if(s.y>canvas.height) s.y=0;
+    });
+
+    fireworks.forEach(f=>{
+        f.update();
+        f.draw();
+    });
+// 🔠 Naam ke sab letters redraw honge
+    nameLetters.forEach(l => {
+        drawLetter(l.char, l.x, l.y);
+    });
+    requestAnimationFrame(animate);
+}
+animate();
+
+/* 🔥 Letter Firework Sequence */
+function startNameSequence() {
+    nameLetters = [];
+    letterIndex = 0;
+    startX = canvas.width / 2 - 160;
+
+    let interval = setInterval(() => {
+        if (letterIndex < letters.length) {
+
+            let fx = new Firework(startX, canvas.height / 3);
+            fireworks.push(fx);
+
+            setTimeout(() => {
+                nameLetters.push({
+                    char: letters[letterIndex],
+                    x: startX,
+                    y: canvas.height / 3 + 30
+                });
+
+                letterIndex++;
+                startX += 80;
+
+            }, 700);
+
+        } else {
+            clearInterval(interval);
+
+            setTimeout(() => {
+                
+                nameLetters = [];
+                startNameSequence(); // 🔁 repeat
+            }, 2500);
+        }
+    }, 1500);
+}
+
+// 🚀 start animation loop
+startNameSequence();
+
+function playMusic(){
+    document.getElementById("bgm").play();
+}
+</script>
+
+</body>
+</html>
